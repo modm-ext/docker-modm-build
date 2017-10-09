@@ -13,6 +13,11 @@ RUN apt update && \
       scons \
       python \
       python-dev \
-      python-pip && \
+      python-pip \
+      libboost-all-dev \
+      libsdl1.2-dev \
+      libsdl-image1.2-dev \
+      libgtkmm-2.4-dev \
+      libzmqpp-dev && \
     apt clean && \
     pip install -r requirements.txt
