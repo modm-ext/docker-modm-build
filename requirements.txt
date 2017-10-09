@@ -1,2 +1,4 @@
 lxml
 jinja2
+configparser
+future
