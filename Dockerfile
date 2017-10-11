@@ -1,6 +1,6 @@
 FROM stronglytyped/arm-none-eabi-gcc
 MAINTAINER Sascha Schade (strongly-typed) <stronglytyp3d@gmail.com>
-LABEL Description="Image for building and debugging xpcc for ARM from git"
+LABEL Description="Image for building and debugging xpcc for ARM and AVR from git"
 WORKDIR /work
 
 ADD . /work
@@ -9,7 +9,6 @@ ADD . /work
 RUN apt update && \
     apt upgrade -y && \
     apt install -y \
-# Development files
       python \
       python-dev \
       python-pip \
@@ -17,6 +16,10 @@ RUN apt update && \
       libsdl1.2-dev \
       libsdl-image1.2-dev \
       libgtkmm-2.4-dev \
-      libzmqpp-dev && \
+      libzmqpp-dev \
+      gcc-avr \
+      avr-libc \
+      binutils-avr \
+      gdb-avr && \
     apt clean && \
     pip install -r requirements.txt
