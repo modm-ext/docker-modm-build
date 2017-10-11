@@ -17,9 +17,11 @@ RUN apt update && \
       libsdl-image1.2-dev \
       libgtkmm-2.4-dev \
       libzmqpp-dev \
+      locales \
       gcc-avr \
       avr-libc \
       binutils-avr \
       gdb-avr && \
     apt clean && \
+    locale-gen en_US.UTF-8 && \
     pip install -r requirements.txt
