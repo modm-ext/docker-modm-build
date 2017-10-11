@@ -10,7 +10,6 @@ RUN apt update && \
     apt upgrade -y && \
     apt install -y \
 # Development files
-      scons \
       python \
       python-dev \
       python-pip \
