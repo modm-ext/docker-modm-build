@@ -3,3 +3,5 @@ lxml
 jinja2
 configparser
 future
+numpy
+pyx==0.12.1

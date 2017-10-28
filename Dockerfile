@@ -21,7 +21,9 @@ RUN apt update && \
       gcc-avr \
       avr-libc \
       binutils-avr \
-      gdb-avr && \
+      gdb-avr \
+      texlive-latex-base \
+      texlive-fonts-recommended && \
     apt clean && \
     locale-gen en_US.UTF-8 && \
     pip install -r requirements.txt
