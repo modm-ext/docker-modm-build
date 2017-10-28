@@ -1,0 +1,8 @@
+scons
+lxml
+jinja2
+configparser
+future
+numpy
+wheel
+pyx

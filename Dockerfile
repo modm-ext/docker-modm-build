@@ -12,6 +12,9 @@ RUN apt update && \
       python \
       python-dev \
       python-pip \
+      python3 \
+      python3-dev \
+      python3-pip \
       libboost-all-dev \
       libsdl1.2-dev \
       libsdl-image1.2-dev \
@@ -26,4 +29,5 @@ RUN apt update && \
       texlive-fonts-recommended && \
     apt clean && \
     locale-gen en_US.UTF-8 && \
-    pip install -r requirements.txt
+    pip install -r requirements.txt && \
+    pip3 install -r requirements3.txt
