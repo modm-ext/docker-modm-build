@@ -5,6 +5,8 @@ WORKDIR /work
 
 ADD . /work
 
+ENV SCONS_LIB_DIR="/usr/local/lib/python2.7/dist-packages/scons-2.5.1"
+
 # Install any needed packages specified in requirements.txt
 RUN apt update && \
     apt upgrade -y && \
