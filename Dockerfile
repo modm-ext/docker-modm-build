@@ -1,11 +1,11 @@
-FROM stronglytyped/arm-none-eabi-gcc
-MAINTAINER Sascha Schade (strongly-typed) <stronglytyp3d@gmail.com>
-LABEL Description="Image for building and debugging xpcc for ARM and AVR from git"
+FROM modm/arm-none-eabi-gcc:latest
+MAINTAINER Niklas Hauser <niklas.hauser@rwth-aachen.de>
+LABEL Description="Image for building and debugging modm for ARM and AVR from git"
 WORKDIR /work
 
 ADD . /work
 
-ENV SCONS_LIB_DIR="/usr/local/lib/python2.7/dist-packages/scons-2.5.1"
+ENV SCONS_LIB_DIR="/usr/local/lib/python3.6/dist-packages/scons-3.0.1"
 
 # Install any needed packages specified in requirements.txt
 RUN apt update && \
@@ -22,14 +22,17 @@ RUN apt update && \
       libsdl-image1.2-dev \
       libgtkmm-2.4-dev \
       libzmqpp-dev \
+      libmpc-dev \
+      libmpfr-dev \
+      libgmp-dev \
       locales \
-      gcc-avr \
-      avr-libc \
-      binutils-avr \
-      gdb-avr \
       texlive-latex-base \
       texlive-fonts-recommended && \
     apt clean && \
     locale-gen en_US.UTF-8 && \
     pip install -r requirements.txt && \
-    pip3 install -r requirements3.txt
+    pip3 install -r requirements3.txt && \
+    pip3 install git+https://github.com/dergraaf/library-builder && \
+    wget -qO- https://github.com/salkinium/docker-avr-gcc-7/releases/download/v7.2.0/avr-gcc.tar.bz2 | tar xj
+
+ENV PATH "/work/avr-gcc/avr-gcc/bin:/work/avr-gcc/avr-binutils/bin:$PATH"
