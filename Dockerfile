@@ -25,6 +25,7 @@ RUN apt update && \
       libmpc-dev \
       libmpfr-dev \
       libgmp-dev \
+      cmake \
       locales \
       texlive-latex-base \
       texlive-fonts-recommended && \
