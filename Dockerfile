@@ -34,6 +34,7 @@ RUN apt update && \
     pip install -r requirements.txt && \
     pip3 install -r requirements3.txt && \
     pip3 install git+https://github.com/dergraaf/library-builder && \
+    pip3 install graphviz && \
     wget -qO- https://github.com/salkinium/docker-avr-gcc-7/releases/download/v7.2.0/avr-gcc.tar.bz2 | tar xj
 
 ENV PATH "/work/avr-gcc/avr-gcc/bin:/work/avr-gcc/avr-binutils/bin:$PATH"
