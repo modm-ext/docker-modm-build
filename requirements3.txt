@@ -7,5 +7,5 @@ numpy
 wheel
 pyx
 pyelftools
-modm-lbuild
+lbuild
 graphviz
