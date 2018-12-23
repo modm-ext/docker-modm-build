@@ -33,6 +33,6 @@ RUN apt update && \
     locale-gen en_US.UTF-8 && \
     pip install -r requirements.txt && \
     pip3 install -r requirements3.txt && \
-    wget -qO- https://github.com/salkinium/docker-avr-gcc-7/releases/download/v7.3.0/avr-gcc.tar.bz2 | tar xj
+    wget -qO- https://github.com/salkinium/docker-avr-gcc-7/releases/download/v8.2.0/avr-gcc.tar.bz2 | tar xj
 
 ENV PATH "/work/avr-gcc/avr-gcc/bin:/work/avr-gcc/avr-binutils/bin:$PATH"
