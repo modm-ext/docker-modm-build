@@ -28,7 +28,9 @@ RUN apt update && \
       cmake \
       locales \
       texlive-latex-base \
-      texlive-fonts-recommended && \
+      texlive-fonts-recommended \
+      doxygen \
+      graphviz && \
     apt clean && \
     locale-gen en_US.UTF-8 && \
     pip install -r requirements.txt && \

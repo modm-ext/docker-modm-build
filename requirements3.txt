@@ -9,3 +9,5 @@ pyx
 pyelftools
 lbuild
 graphviz
+mkdocs
+mkdocs-material
