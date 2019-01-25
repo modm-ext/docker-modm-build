@@ -5,7 +5,7 @@ WORKDIR /work
 
 ADD . /work
 
-ENV SCONS_LIB_DIR="/usr/local/lib/python3.6/dist-packages/scons-3.0.1"
+ENV SCONS_LIB_DIR="/usr/local/lib/python3.6/dist-packages/scons-3.0.4"
 
 # Install any needed packages specified in requirements.txt
 RUN apt update && \

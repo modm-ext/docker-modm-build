@@ -1,4 +1,4 @@
-scons
+scons==3.0.4
 lxml
 jinja2
 configparser
