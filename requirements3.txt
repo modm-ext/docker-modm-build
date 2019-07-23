@@ -1,13 +1,11 @@
+modm
 scons
-lxml
-jinja2
 configparser
-future
+
+# system_layout.py
 numpy
-wheel
 pyx
-pyelftools
-lbuild
+
 graphviz
 mkdocs
 mkdocs-material

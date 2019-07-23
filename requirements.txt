@@ -1,9 +1,0 @@
-scons==2.5.1
-lxml
-jinja2
-configparser
-future
-numpy
-pyx==0.12.1
-pyelftools
-pathlib

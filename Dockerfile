@@ -1,5 +1,5 @@
 FROM modm/arm-none-eabi-gcc:latest
-MAINTAINER Niklas Hauser <niklas.hauser@rwth-aachen.de>
+LABEL maintainer="Niklas Hauser <niklas.hauser@rwth-aachen.de>"
 LABEL Description="Image for building and debugging modm for ARM and AVR from git"
 WORKDIR /work
 
@@ -10,12 +10,9 @@ ENV LANG="en_US.UTF-8"
 ENV SCONSFLAGS="-j4"
 
 # Install any needed packages specified in requirements.txt
-RUN apt update && \
-    apt upgrade -y && \
-    apt install -y \
-      python \
-      python-dev \
-      python-pip \
+RUN apt update -qq && \
+    apt upgrade -y -qq && \
+    apt install -y -qq \
       python3 \
       python3-dev \
       python3-pip \
@@ -33,9 +30,10 @@ RUN apt update && \
       texlive-fonts-recommended \
       doxygen \
       graphviz && \
-    apt clean && \
+    apt clean -qq && \
     locale-gen en_US.UTF-8 && \
-    pip install -r requirements.txt && \
+    update-alternatives --install /usr/bin/python python /usr/bin/python3.6 1 && \
+    update-alternatives --set python /usr/bin/python3.6 && \
     pip3 install -r requirements3.txt && \
     wget -qO- https://github.com/salkinium/docker-avr-gcc-7/releases/download/v8.2.0/avr-gcc.tar.bz2 | tar xj
 
