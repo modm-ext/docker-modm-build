@@ -35,6 +35,8 @@ RUN apt update -qq && \
     update-alternatives --install /usr/bin/python python /usr/bin/python3.6 1 && \
     update-alternatives --set python /usr/bin/python3.6 && \
     pip3 install -r requirements3.txt && \
-    wget -qO- https://github.com/salkinium/docker-avr-gcc/releases/download/v9.1.0/avr-gcc.tar.bz2 | tar xj
+    wget -qO- https://github.com/salkinium/docker-avr-gcc/releases/download/v9.1.0/avr-gcc.tar.bz2 | tar xj && \
+    mkdir doxypress && \
+    wget -qO- https://download.copperspice.com/doxypress/binary/doxypress-1.3.6-ubuntu18.04-x64.tar.bz2 | tar xj -C doxypress
 
-ENV PATH "/work/avr-gcc/avr-gcc/bin:/work/avr-gcc/avr-binutils/bin:$PATH"
+ENV PATH "/work/doxypress:/work/avr-gcc/avr-gcc/bin:/work/avr-gcc/avr-binutils/bin:$PATH"
