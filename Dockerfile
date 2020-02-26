@@ -5,7 +5,7 @@ WORKDIR /work
 
 ADD . /work
 
-ENV SCONS_LIB_DIR="/usr/local/lib/python3.6/dist-packages/scons"
+ENV SCONS_LIB_DIR="/usr/local/lib/python3.7/dist-packages/scons"
 ENV LANG="en_US.UTF-8"
 ENV SCONSFLAGS="-j4"
 
@@ -32,8 +32,8 @@ RUN apt update -qq && \
       graphviz && \
     apt clean -qq && \
     locale-gen en_US.UTF-8 && \
-    update-alternatives --install /usr/bin/python python /usr/bin/python3.6 1 && \
-    update-alternatives --set python /usr/bin/python3.6 && \
+    update-alternatives --install /usr/bin/python python /usr/bin/python3.7 1 && \
+    update-alternatives --set python /usr/bin/python3.7 && \
     pip3 install -r requirements3.txt && \
     wget -qO- https://github.com/salkinium/docker-avr-gcc/releases/download/v9.1.0/avr-gcc.tar.bz2 | tar xj && \
     mkdir doxypress && \
