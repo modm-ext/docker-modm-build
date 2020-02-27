@@ -29,7 +29,8 @@ RUN apt update -qq && \
       texlive-latex-base \
       texlive-fonts-recommended \
       doxygen \
-      graphviz && \
+      graphviz \
+      curl && \
     apt clean -qq && \
     locale-gen en_US.UTF-8 && \
     update-alternatives --install /usr/bin/python python /usr/bin/python3.7 1 && \
