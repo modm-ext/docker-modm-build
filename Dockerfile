@@ -20,7 +20,6 @@ RUN apt update -qq && \
       libsdl1.2-dev \
       libsdl-image1.2-dev \
       libgtkmm-2.4-dev \
-      libzmqpp-dev \
       libmpc-dev \
       libmpfr-dev \
       libgmp-dev \
