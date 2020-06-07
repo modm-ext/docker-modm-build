@@ -10,9 +10,9 @@ ENV LANG="en_US.UTF-8"
 ENV SCONSFLAGS="-j4"
 
 # Install any needed packages specified in requirements.txt
-RUN apt update -qq && \
-    apt upgrade -y -qq && \
-    apt install -y -qq \
+RUN apt-get update -qq && \
+    apt-get upgrade -y -qq && \
+    apt-get install -y -qq \
       python3 \
       python3-dev \
       python3-pip \
@@ -31,13 +31,13 @@ RUN apt update -qq && \
       doxygen \
       graphviz \
       curl && \
-    apt clean -qq && \
+    apt-get clean -qq && \
     locale-gen en_US.UTF-8 && \
-    update-alternatives --install /usr/bin/python python /usr/bin/python3.7 1 && \
-    update-alternatives --set python /usr/bin/python3.7 && \
+    update-alternatives --install /usr/bin/python python /usr/bin/python3.8 1 && \
+    update-alternatives --set python /usr/bin/python3.8 && \
     pip3 install -r requirements3.txt && \
     wget -qO- https://github.com/modm-ext/docker-avr-gcc/releases/download/v9.2.0/avr-gcc.tar.bz2 | tar xj && \
     mkdir doxypress && \
-    wget -qO- https://download.copperspice.com/doxypress/binary/doxypress-1.3.7-ubuntu18.04-x64.tar.bz2 | tar xj -C doxypress
+    wget -qO- https://download.copperspice.com/doxypress/binary/doxypress-1.3.8-ubuntu18.04-x64.tar.bz2 | tar xj -C doxypress
 
 ENV PATH "/work/doxypress:/work/avr-gcc/avr-gcc/bin:/work/avr-gcc/avr-binutils/bin:$PATH"
