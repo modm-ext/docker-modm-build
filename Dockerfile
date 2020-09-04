@@ -38,8 +38,8 @@ RUN locale-gen en_US.UTF-8 && \
     update-alternatives --install /usr/bin/python python /usr/bin/python3.8 1 && \
     update-alternatives --set python /usr/bin/python3.8
 RUN pip3 install -r requirements3.txt
-RUN wget -qO- https://github.com/modm-ext/docker-avr-gcc/releases/download/v9.2.0/avr-gcc.tar.bz2 | tar xj
-RUN mkdir doxypress && \
-    wget -qO- https://download.copperspice.com/doxypress/binary/doxypress-1.3.8-ubuntu18.04-x64.tar.bz2 | tar xj -C doxypress
+RUN wget -qO- https://github.com/modm-ext/docker-avr-gcc/releases/download/v10.2.0/avr-gcc.tar.bz2 | tar xj -C /opt
+RUN mkdir /opt/doxypress && \
+    wget -qO- https://download.copperspice.com/doxypress/binary/doxypress-1.3.8-ubuntu18.04-x64.tar.bz2 | tar xj -C /opt/doxypress
 
-ENV PATH "/work/doxypress:/work/avr-gcc/avr-gcc/bin:/work/avr-gcc/avr-binutils/bin:$PATH"
+ENV PATH "/opt/doxypress:/opt/avr-gcc/avr-gcc/bin:/opt/avr-gcc/avr-binutils/bin:$PATH"
