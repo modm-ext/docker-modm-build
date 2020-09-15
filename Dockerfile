@@ -5,7 +5,6 @@ WORKDIR /work
 
 ADD . /work
 
-ENV SCONS_LIB_DIR="/usr/local/lib/python3.7/dist-packages/scons"
 ENV LANG="en_US.UTF-8"
 ENV SCONSFLAGS="-j4"
 
