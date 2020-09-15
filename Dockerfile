@@ -3,7 +3,7 @@ LABEL maintainer="Niklas Hauser <niklas.hauser@rwth-aachen.de>"
 LABEL Description="Image for building and debugging modm for ARM and AVR from git"
 WORKDIR /work
 
-ADD . /work
+ADD requirements3.txt /work
 
 ENV LANG="en_US.UTF-8"
 ENV SCONSFLAGS="-j4"
@@ -36,7 +36,7 @@ RUN apt-get update -qq && \
 RUN locale-gen en_US.UTF-8 && \
     update-alternatives --install /usr/bin/python python /usr/bin/python3.8 1 && \
     update-alternatives --set python /usr/bin/python3.8
-RUN pip3 install -r requirements3.txt
+RUN pip3 install -r requirements3.txt && rm requirements3.txt
 RUN wget -qO- https://github.com/modm-ext/docker-avr-gcc/releases/download/v10.2.0/avr-gcc.tar.bz2 | tar xj -C /opt
 RUN mkdir /opt/doxypress && \
     wget -qO- https://download.copperspice.com/doxypress/binary/doxypress-1.4.0-ubuntu20.04-x64.tar.bz2 | tar xj -C /opt/doxypress
