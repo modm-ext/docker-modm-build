@@ -1,6 +1,6 @@
 FROM modm/arm-none-eabi-gcc:latest
-LABEL maintainer="Niklas Hauser <niklas.hauser@rwth-aachen.de>"
-LABEL Description="Image for building and debugging modm for ARM and AVR from git"
+LABEL maintainer="Niklas Hauser <niklas.hauser@rwth-aachen.de>, Raphael Lehmann <raphael+docker@rleh.de"
+LABEL Description="Image for building and debugging modm for ARM, AVR and RISC-V"
 WORKDIR /work
 
 ADD requirements3.txt /work
@@ -37,9 +37,9 @@ RUN locale-gen en_US.UTF-8 && \
     update-alternatives --install /usr/bin/python python /usr/bin/python3.8 1 && \
     update-alternatives --set python /usr/bin/python3.8
 RUN pip3 install -r requirements3.txt && rm requirements3.txt
-RUN wget -qO- https://github.com/modm-ext/riscv-gcc/releases/download/v10.1.0/riscv-gcc.tar.bz2 | tar xj -C /opt
+RUN wget -qO- https://github.com/modm-ext/riscv-gcc/releases/download/v10.2.0/modm-riscv-gcc.tar.bz2 | tar xj -C /opt
 RUN wget -qO- https://github.com/modm-ext/docker-avr-gcc/releases/download/v10.2.0/avr-gcc.tar.bz2 | tar xj -C /opt
 RUN mkdir /opt/doxypress && \
     wget -qO- https://download.copperspice.com/doxypress/binary/doxypress-1.4.0-ubuntu20.04-x64.tar.bz2 | tar xj -C /opt/doxypress
 
-ENV PATH "/opt/doxypress:/opt/avr-gcc/avr-gcc/bin:/opt/avr-gcc/avr-binutils/bin:/opt/riscv-gcc/bin:$PATH"
+ENV PATH "/opt/doxypress:/opt/avr-gcc/avr-gcc/bin:/opt/avr-gcc/avr-binutils/bin:/opt/modm-riscv-gcc/bin:$PATH"
