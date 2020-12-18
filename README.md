@@ -2,16 +2,16 @@
 
 Docker containers for building modm for different architectures:
 
-* ARM Cortex-M (STM32, SAMD, ...): `docker pull modm/modm-build:cortex-m`
-* Atmel/Microchip AVR: `docker pull modm/modm-build:avr`
-* RISC-V: `docker pull modm/modm-build:risc-v`
-* Hosted (Linux): `docker pull modm/modm-build:base`
+* ARM Cortex-M (STM32, SAMD, ...): `docker pull ghcr.io/modm-ext/modm-build-cortex-m:latest`
+* Atmel/Microchip AVR: `docker pull ghcr.io/modm-ext/modm-build-avr:latest`
+* RISC-V: `docker pull ghcr.io/modm-ext/modm-build-risc-v:latest`
+* Hosted (Linux): `docker pull ghcr.io/modm-ext/modm-build-base:latest`
 
 ## Build images
 
 ```bash
 make all -j4
 
-# Push to dockerhub
-make push -j4
+# Push to ghcr.io
+make push
 ```

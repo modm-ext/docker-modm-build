@@ -1,4 +1,4 @@
-FROM modm/modm-build:base
+FROM ghcr.io/modm-ext/modm-build-base:latest
 LABEL maintainer="Niklas Hauser <niklas.hauser@rwth-aachen.de>, Raphael Lehmann <raphael+docker@rleh.de"
 LABEL Description="Image for building and debugging modm for AVR"
 
