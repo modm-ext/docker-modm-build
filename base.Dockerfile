@@ -17,6 +17,7 @@ RUN apt-get update -qq && \
     apt-get upgrade -y -qq && \
     apt-get install -y -qq \
       build-essential \
+      gcc-10 g++-10 \
       git \
       bzip2 \
       wget \
@@ -38,6 +39,7 @@ RUN apt-get update -qq && \
       graphviz \
       curl && \
     apt-get clean -qq
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 90 --slave /usr/bin/g++ g++ /usr/bin/g++-10 --slave /usr/bin/gcov gcov /usr/bin/gcov-10
 RUN locale-gen en_US.UTF-8
 RUN pip3 install -r requirements3.txt && rm requirements3.txt
 RUN mkdir /opt/doxypress && \
