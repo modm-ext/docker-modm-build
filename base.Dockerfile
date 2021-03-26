@@ -43,6 +43,6 @@ RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 90 --slave /u
 RUN locale-gen en_US.UTF-8
 RUN pip3 install -r requirements3.txt && rm requirements3.txt
 RUN mkdir /opt/doxypress && \
-    wget -qO- https://download.copperspice.com/doxypress/binary/doxypress-1.4.0-ubuntu20.04-x64.tar.bz2 | tar xj -C /opt/doxypress
+    wget -qO- https://download.copperspice.com/doxypress/binary/doxypress-1.4.1-ubuntu20.04-x64.tar.bz2 | tar xj -C /opt/doxypress
 
 ENV PATH "/opt/doxypress:$PATH"
