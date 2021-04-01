@@ -9,6 +9,7 @@ ADD requirements3.txt /work
 
 ENV LANG="en_US.UTF-8"
 ENV SCONSFLAGS="-j4"
+ENV MAKEFLAGS="-j4"
 
 ENV TZ=Europe/Berlin
 ARG DEBIAN_FRONTEND=noninteractive
