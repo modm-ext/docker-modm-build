@@ -25,6 +25,7 @@ RUN apt-get update -qq && \
       python3 \
       python3-dev \
       python3-pip \
+      python-is-python3 \
       libboost-all-dev \
       libsdl1.2-dev \
       libsdl-image1.2-dev \
