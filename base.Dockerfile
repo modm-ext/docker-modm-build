@@ -39,7 +39,8 @@ RUN apt-get update -qq && \
       texlive-fonts-recommended \
       doxygen \
       graphviz \
-      curl && \
+      curl \
+      clang-format && \
     apt-get clean -qq
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 90 --slave /usr/bin/g++ g++ /usr/bin/g++-10 --slave /usr/bin/gcov gcov /usr/bin/gcov-10
 RUN locale-gen en_US.UTF-8
