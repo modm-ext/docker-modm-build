@@ -14,6 +14,7 @@ ENV MAKEFLAGS="-j4"
 ENV TZ=Europe/Berlin
 ARG DEBIAN_FRONTEND=noninteractive
 
+COPY llvm-snapshot.gpg.key llvm-snapshot.gpg.key
 RUN apt-get update -qq && \
     apt-get upgrade -y -qq && \
     apt-get install -y -qq \
@@ -40,9 +41,15 @@ RUN apt-get update -qq && \
       doxygen \
       graphviz \
       curl \
-      clang-format && \
+      gnupg2 && \
     apt-get clean -qq
-RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 90 --slave /usr/bin/g++ g++ /usr/bin/g++-10 --slave /usr/bin/gcov gcov /usr/bin/gcov-10
+RUN apt-key add llvm-snapshot.gpg.key && \
+    echo "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-13 main" > /etc/apt/sources.list.d/llvm.list && \
+    apt-get update -qq && \
+    apt-get install -y -qq clang-format-13 && \
+    apt-get clean -qq
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 90 --slave /usr/bin/g++ g++ /usr/bin/g++-10 --slave /usr/bin/gcov gcov /usr/bin/gcov-10 && \
+    update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-13 100
 RUN locale-gen en_US.UTF-8
 RUN pip3 install -r requirements3.txt && rm requirements3.txt
 RUN mkdir /opt/doxypress && \
