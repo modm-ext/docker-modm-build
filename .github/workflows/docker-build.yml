@@ -18,6 +18,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Set FROM image tag/version
+        run: |
+         for dockerfile in *.Dockerfile; do
+          sed -i "s/modm-build-base:TAG/modm-build-base:${{ env.VERSION }}/g" $dockerfile
+         done
+         git diff
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 

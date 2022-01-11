@@ -18,14 +18,17 @@ base: base.Dockerfile
 	docker build --tag ghcr.io/modm-ext/modm-build-$@:$(DATE) --file $< .
 	docker tag ghcr.io/modm-ext/modm-build-$@:$(DATE) ghcr.io/modm-ext/modm-build-$@:latest
 avr: avr.Dockerfile
-	docker build --tag ghcr.io/modm-ext/modm-build-$@:$(DATE) --file $< .
-	docker tag ghcr.io/modm-ext/modm-build-$@:$(DATE) ghcr.io/modm-ext/modm-build-$@:latest
+	cat $< | sed "s/modm-build-base:TAG/modm-build-base:$(DATE)/g" | \
+	docker build --tag ghcr.io/modm-ext/modm-build-$@:$(DATE) -
+	docker tag ghcr.io/modm-ext/modm-build-$@:$(DATE) ghcr.io/modm-ext/modm-build-$@:testing
 cortex-m: cortex-m.Dockerfile
-	docker build --tag ghcr.io/modm-ext/modm-build-$@:$(DATE) --file $< .
-	docker tag ghcr.io/modm-ext/modm-build-$@:$(DATE) ghcr.io/modm-ext/modm-build-$@:latest
+	cat $< | sed "s/modm-build-base:TAG/modm-build-base:$(DATE)/g" | \
+	docker build --tag ghcr.io/modm-ext/modm-build-$@:$(DATE) -
+	docker tag ghcr.io/modm-ext/modm-build-$@:$(DATE) ghcr.io/modm-ext/modm-build-$@:testing
 risc-v: risc-v.Dockerfile
-	docker build --tag ghcr.io/modm-ext/modm-build-$@:$(DATE) --file $< .
-	docker tag ghcr.io/modm-ext/modm-build-$@:$(DATE) ghcr.io/modm-ext/modm-build-$@:latest
+	cat $< | sed "s/modm-build-base:TAG/modm-build-base:$(DATE)/g" | \
+	docker build --tag ghcr.io/modm-ext/modm-build-$@:$(DATE) -
+	docker tag ghcr.io/modm-ext/modm-build-$@:$(DATE) ghcr.io/modm-ext/modm-build-$@:testing
 
 $(PUSH_LIST):
 	docker push ghcr.io/modm-ext/modm-build-$(@:push-%=%):$(DATE)
