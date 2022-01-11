@@ -1,5 +1,5 @@
 FROM ghcr.io/modm-ext/modm-build-base:TAG
-LABEL maintainer="Niklas Hauser <niklas.hauser@rwth-aachen.de>, Raphael Lehmann <raphael+docker@rleh.de"
+LABEL maintainer="Niklas Hauser <niklas.hauser@rwth-aachen.de>, Raphael Lehmann <raphael+docker@rleh.de>, Christopher Durand <christopher.durand@rwth-aachen.de>"
 LABEL Description="Image for building and debugging modm for AVR"
 LABEL org.opencontainers.image.source https://github.com/modm-ext/docker-modm-build
 

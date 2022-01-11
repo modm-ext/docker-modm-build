@@ -1,5 +1,5 @@
 FROM ubuntu:20.04
-LABEL maintainer="Niklas Hauser <niklas.hauser@rwth-aachen.de>, Raphael Lehmann <raphael+docker@rleh.de"
+LABEL maintainer="Niklas Hauser <niklas.hauser@rwth-aachen.de>, Raphael Lehmann <raphael+docker@rleh.de>, Christopher Durand <christopher.durand@rwth-aachen.de>"
 LABEL description="Image for building and debugging modm"
 LABEL org.opencontainers.image.source https://github.com/modm-ext/docker-modm-build
 
