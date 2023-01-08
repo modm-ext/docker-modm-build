@@ -3,6 +3,6 @@ LABEL maintainer="Niklas Hauser <niklas.hauser@rwth-aachen.de>, Raphael Lehmann 
 LABEL Description="Image for building, debugging and programming modm for ARM Cortex-M"
 LABEL org.opencontainers.image.source https://github.com/modm-ext/docker-modm-build
 
-RUN wget -qO- https://github.com/xpack-dev-tools/openocd-xpack/releases/download/v0.11.0-3/xpack-openocd-0.11.0-3-linux-x64.tar.gz | tar -xvz -C /opt
+RUN wget -qO- https://github.com/xpack-dev-tools/openocd-xpack/releases/download/v0.11.0-5/xpack-openocd-0.11.0-5-linux-x64.tar.gz | tar -xvz -C /opt
 
-ENV PATH "/opt/xpack-openocd-0.11.0-3/bin:$PATH"
+ENV PATH "/opt/xpack-openocd-0.11.0-5/bin:$PATH"
