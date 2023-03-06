@@ -1,29 +1,30 @@
-name: Build docker images modm-build-*
+name: Build and test docker images modm-build-*
 
 on:
   push:
   workflow_dispatch:
 
 jobs:
-  docker-build:
+  docker-build-base:
     runs-on: ubuntu-22.04
+    outputs:
+      version: ${{ steps.generate_version.outputs.version }}
 
     steps:
       - name: Generate date/version string
+        id: generate_version
         run: |
          export VERSION_TMP="$(date +%F)"
          echo $VERSION_TMP
          echo "VERSION=$VERSION_TMP" >> $GITHUB_ENV
+         echo "version=$VERSION_TMP" >> $GITHUB_OUTPUT
 
       - name: Checkout
         uses: actions/checkout@v3
 
       - name: Set FROM image tag/version
         run: |
-         for dockerfile in *.Dockerfile; do
-          sed -i "s/modm-build-base:TAG/modm-build-base:${{ env.VERSION }}/g" $dockerfile
-         done
-         sed -i "s/modm-build-cortex-m:TAG/modm-build-cortex-m:${{ env.VERSION }}/g" cortex-m-openocd.Dockerfile
+         sed -i "s/modm-build-base:TAG/modm-build-base:${{ env.VERSION }}/g" base.Dockerfile
          git diff
 
       - name: Set up Docker Buildx
@@ -37,7 +38,7 @@ jobs:
           password: ${{ secrets.token }}
 
       - name: Build and push modm-build-base
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: .
           file: ./base.Dockerfile
@@ -48,8 +49,28 @@ jobs:
             ghcr.io/modm-ext/modm-build-base:${{github.ref == 'refs/heads/master' && 'latest' || 'testing' }}
 
 
+  docker-build-avr:
+    runs-on: ubuntu-22.04
+    needs: docker-build-base
+    env:
+      VERSION: ${{needs.docker-build-base.outputs.version}}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set FROM image tag/version
+        run: |
+         sed -i "s/modm-build-base:TAG/modm-build-base:${{ env.VERSION }}/g" avr.Dockerfile
+         git diff
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.user }}
+          password: ${{ secrets.token }}
       - name: Build and push modm-build-avr
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: .
           file: ./avr.Dockerfile
@@ -59,8 +80,29 @@ jobs:
             ghcr.io/modm-ext/modm-build-avr:${{ env.VERSION }}
             ghcr.io/modm-ext/modm-build-avr:${{github.ref == 'refs/heads/master' && 'latest' || 'testing' }}
 
+  docker-build-cortex-m:
+    runs-on: ubuntu-22.04
+    needs: docker-build-base
+    env:
+      VERSION: ${{needs.docker-build-base.outputs.version}}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set FROM image tag/version
+        run: |
+         sed -i "s/modm-build-base:TAG/modm-build-base:${{ env.VERSION }}/g" cortex-m.Dockerfile
+         sed -i "s/modm-build-cortex-m:TAG/modm-build-cortex-m:${{ env.VERSION }}/g" cortex-m-openocd.Dockerfile
+         git diff
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.user }}
+          password: ${{ secrets.token }}
       - name: Build and push modm-build-cortex-m
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: .
           file: ./cortex-m.Dockerfile
@@ -69,9 +111,8 @@ jobs:
           tags: |
             ghcr.io/modm-ext/modm-build-cortex-m:${{ env.VERSION }}
             ghcr.io/modm-ext/modm-build-cortex-m:${{github.ref == 'refs/heads/master' && 'latest' || 'testing' }}
-
       - name: Build and push modm-build-cortex-m-openocd
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: .
           file: ./cortex-m-openocd.Dockerfile
@@ -81,8 +122,28 @@ jobs:
             ghcr.io/modm-ext/modm-build-cortex-m-openocd:${{ env.VERSION }}
             ghcr.io/modm-ext/modm-build-cortex-m-openocd:${{github.ref == 'refs/heads/master' && 'latest' || 'testing' }}
 
+  docker-build-risc-v:
+    runs-on: ubuntu-22.04
+    needs: docker-build-base
+    env:
+      VERSION: ${{needs.docker-build-base.outputs.version}}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set FROM image tag/version
+        run: |
+         sed -i "s/modm-build-base:TAG/modm-build-base:${{ env.VERSION }}/g" risc-v.Dockerfile
+         git diff
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.user }}
+          password: ${{ secrets.token }}
       - name: Build and push modm-build-risc-v
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: .
           file: ./risc-v.Dockerfile
@@ -91,3 +152,104 @@ jobs:
           tags: |
             ghcr.io/modm-ext/modm-build-risc-v:${{ env.VERSION }}
             ghcr.io/modm-ext/modm-build-risc-v:${{github.ref == 'refs/heads/master' && 'latest' || 'testing' }}
+
+  docker-testing-base:
+    runs-on: ubuntu-22.04
+    needs: docker-build-base
+    container:
+      image: ghcr.io/modm-ext/modm-build-base:${{github.ref == 'refs/heads/master' && 'latest' || 'testing' }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+        with:
+          repository: 'modm-io/modm'
+          ref: 'develop'
+          submodules: 'recursive'
+      - name: Fix Git permission/ownership problem
+        run: |
+          git config --global --add safe.directory /__w/docker-modm-build/docker-modm-build
+      - name: Check environment
+        run: |
+          env
+          locale -a
+          python --version  || true
+          python3 --version || true
+          python3 -c "import os; print(os.cpu_count())"
+          which scons
+          scons --version
+          which g++
+          g++ --version
+          which lbuild
+          lbuild --version
+      - name: Hosted Unittests
+        if: always()
+        run: |
+          (cd test && make run-hosted-linux)
+
+  docker-testing-avr:
+    runs-on: ubuntu-22.04
+    needs: docker-build-avr
+    container:
+      image: ghcr.io/modm-ext/modm-build-avr:${{github.ref == 'refs/heads/master' && 'latest' || 'testing' }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+        with:
+          repository: 'modm-io/modm'
+          ref: 'develop'
+          submodules: 'recursive'
+      - name: Fix Git permission/ownership problem
+        run: |
+          git config --global --add safe.directory /__w/docker-modm-build/docker-modm-build
+      - name: Check environment
+        run: |
+          which avr-g++
+          avr-g++ --version
+          avr-g++ --print-multi-lib
+      - name: Examples AVR Series
+        if: always()
+        run: |
+          (cd examples && ../tools/scripts/examples_compile.py arduino_uno arduino_nano)
+
+  docker-testing-cortex-m:
+    runs-on: ubuntu-22.04
+    needs: docker-build-cortex-m
+    container:
+      image: ghcr.io/modm-ext/modm-build-cortex-m:${{github.ref == 'refs/heads/master' && 'latest' || 'testing' }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+        with:
+          repository: 'modm-io/modm'
+          ref: 'develop'
+          submodules: 'recursive'
+      - name: Fix Git permission/ownership problem
+        run: |
+          git config --global --add safe.directory /__w/docker-modm-build/docker-modm-build
+      - name: Check environment
+        run: |
+          which arm-none-eabi-g++
+          arm-none-eabi-g++ --version
+          arm-none-eabi-g++ --print-multi-lib
+      - name: Examples SAMV and STM32G4
+        if: always()
+        run: |
+          (cd examples && ../tools/scripts/examples_compile.py samv)
+          (cd examples && ../tools/scripts/examples_compile.py nucleo_g474re)
+
+  docker-testing-risc-v:
+    runs-on: ubuntu-22.04
+    needs: docker-build-risc-v
+    container:
+      image: ghcr.io/modm-ext/modm-build-risc-v:${{github.ref == 'refs/heads/master' && 'latest' || 'testing' }}
+    steps:
+      - name: Check environment
+        run: |
+          which riscv32-unknown-elf-g++
+          riscv32-unknown-elf-g++ --version
+          riscv32-unknown-elf-g++ --print-multi-lib
+      - name: Compile minimal main.cpp
+        run: |
+          echo "int main() { return 0; }" > /tmp/main.cpp
+          riscv32-unknown-elf-g++ /tmp/main.cpp -o /tmp/main.out
+          file /tmp/main.out
