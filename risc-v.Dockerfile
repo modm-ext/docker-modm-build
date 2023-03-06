@@ -3,6 +3,6 @@ LABEL maintainer="Niklas Hauser <niklas.hauser@rwth-aachen.de>, Raphael Lehmann 
 LABEL Description="Image for building and debugging modm for RISC-V"
 LABEL org.opencontainers.image.source https://github.com/modm-ext/docker-modm-build
 
-RUN wget -qO- https://github.com/modm-io/riscv-gcc/releases/download/v12.2.0/modm-riscv-gcc.tar.bz2 | tar xj -C /opt
+RUN wget -qO- https://buildbot.embecosm.com/job/riscv32-gcc-ubuntu2204-release/4/artifact/riscv32-embecosm-ubuntu2204-gcc12.2.0.tar.gz | tar xz -C /opt
 
-ENV PATH "/opt/modm-riscv-gcc/bin:$PATH"
+ENV PATH "/opt/riscv32-embecosm-ubuntu2204-gcc12.2.0/bin:$PATH"
