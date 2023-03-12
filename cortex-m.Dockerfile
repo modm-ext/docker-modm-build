@@ -3,6 +3,6 @@ LABEL maintainer="Niklas Hauser <niklas.hauser@rwth-aachen.de>, Raphael Lehmann 
 LABEL Description="Image for building and debugging modm for ARM Cortex-M"
 LABEL org.opencontainers.image.source https://github.com/modm-ext/docker-modm-build
 
-RUN wget -qO- https://developer.arm.com/-/media/Files/downloads/gnu/12.2.rel1/binrel/arm-gnu-toolchain-12.2.rel1-x86_64-arm-none-eabi.tar.xz | tar -xJ -C /opt
+RUN wget -qO- https://github.com/xpack-dev-tools/arm-none-eabi-gcc-xpack/releases/download/v12.2.1-1.2/xpack-arm-none-eabi-gcc-12.2.1-1.2-linux-x64.tar.gz | tar -xz -C /opt
 
-ENV PATH "/opt/arm-gnu-toolchain-12.2.rel1-x86_64-arm-none-eabi/bin:$PATH"
+ENV PATH "/opt/xpack-arm-none-eabi-gcc-12.2.1-1.2/bin:$PATH"
