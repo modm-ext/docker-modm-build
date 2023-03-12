@@ -41,6 +41,7 @@ RUN apt-get update -qq && \
       graphviz \
       curl \
       gnupg2 \
+      libncursesw5 \
       clang-format-13 && \
     apt-get clean -qq
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 90 --slave /usr/bin/g++ g++ /usr/bin/g++-12 --slave /usr/bin/gcov gcov /usr/bin/gcov-12 && \
