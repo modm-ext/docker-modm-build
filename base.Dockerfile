@@ -49,6 +49,6 @@ RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 90 --slave /u
 RUN locale-gen en_US.UTF-8
 RUN pip3 install -r requirements3.txt && rm requirements3.txt
 RUN mkdir /opt/doxypress && \
-    wget -qO- https://github.com/copperspice/doxypress/releases/download/dp-1.5.1/doxypress-1.5.1-ubuntu22.04-x64.tar.bz2 | tar xj -C /opt/doxypress
+    wget -qO- https://github.com/copperspice/doxypress/releases/download/dp-1.7.0/doxypress-1.7.0-ubuntu24.04-x64.tar.bz2 | tar xj -C /opt/doxypress
 
 ENV PATH "/opt/doxypress:$PATH"
