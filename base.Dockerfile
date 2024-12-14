@@ -18,7 +18,7 @@ RUN apt-get update -qq && \
     apt-get upgrade -y -qq && \
     apt-get install -y -qq \
       build-essential \
-      gcc-12 g++-12 \
+      gcc g++ \
       git \
       bzip2 \
       wget \
@@ -42,10 +42,8 @@ RUN apt-get update -qq && \
       curl \
       gnupg2 \
       libncursesw6 \
-      clang-format-15 && \
+      clang-format && \
     apt-get clean -qq
-RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 90 --slave /usr/bin/g++ g++ /usr/bin/g++-12 --slave /usr/bin/gcov gcov /usr/bin/gcov-12 && \
-    update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-15 100
 RUN locale-gen en_US.UTF-8
 RUN pip3 install --break-system-packages -r requirements3.txt && rm requirements3.txt
 RUN mkdir /opt/doxypress && \
