@@ -47,6 +47,6 @@ RUN apt-get update -qq && \
 RUN locale-gen en_US.UTF-8
 RUN pip3 install --break-system-packages -r requirements3.txt && rm requirements3.txt
 RUN mkdir /opt/doxypress && \
-    wget -qO- https://github.com/copperspice/doxypress/releases/download/dp-1.7.0/doxypress-1.7.0-ubuntu24.04-x64.tar.bz2 | tar xj -C /opt/doxypress
+    wget -qO- https://github.com/copperspice/doxypress/releases/download/dp-2.0.0/doxypress-2.0.0-ubuntu24.04-x64.tar.bz2 | tar xj -C /opt/doxypress
 
 ENV PATH="/opt/doxypress:$PATH"
