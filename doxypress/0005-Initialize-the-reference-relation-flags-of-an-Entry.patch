@@ -1,0 +1,55 @@
+From 383424ec9d6997866af02cbda5dd86a120f56d68 Mon Sep 17 00:00:00 2001
+From: Niklas Hauser <niklas.hauser@rwth-aachen.de>
+Date: Mon, 12 Oct 2026 19:58:51 +0200
+Subject: [PATCH 5/6] Initialize the reference relation flags of an Entry
+
+Entry::referencedByRelation and Entry::referencesRelation were not set in
+Entry::reset() and not copied in the copy constructor. Every member read
+an indeterminate value and when it was true MemberDef set
+Doxy_Globals::parseSourcesNeeded, so the source code of all input files
+was parsed and cross referenced even though 'source-code', 'ref-relation'
+and 'ref-by-relation' were disabled.
+
+Whether this happened depended on the contents of the allocated memory.
+It did on Linux/x86_64, where it accounted for most of the run time and
+grew much faster than the size of the input.
+---
+ src/entry.cpp | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/src/entry.cpp b/src/entry.cpp
+index 61f6e1a2..28f0a628 100644
+--- a/src/entry.cpp
++++ b/src/entry.cpp
+@@ -48,6 +48,10 @@ Entry::Entry(const Entry &e)
+    // int
+    section          = e.section;
+    initLines        = e.initLines;
++
++   referencedByRelation = e.referencedByRelation;
++   referencesRelation   = e.referencesRelation;
++
+    docLine          = e.docLine;
+    briefLine        = e.briefLine;
+    inbodyLine       = e.inbodyLine;
+@@ -102,6 +106,9 @@ void Entry::reset()
+    static const bool dotCallGraph = Config::getBool("dot-call");
+    static const bool dotCalledBy  = Config::getBool("dot-called-by");
+ 
++   static const bool refByRelation = Config::getBool("ref-by-relation");
++   static const bool refRelation   = Config::getBool("ref-relation");
++
+    m_tagInfo.clear();
+    argList.clear();
+    typeConstr.clear();
+@@ -118,6 +125,10 @@ void Entry::reset()
+    // int
+    section       = Entry::EMPTY_SEC;
+    initLines     = -1;
++
++   referencedByRelation = refByRelation;
++   referencesRelation   = refRelation;
++
+    docLine       = -1;
+    briefLine     = -1;
+    inbodyLine    = -1;

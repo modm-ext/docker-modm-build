@@ -1,0 +1,41 @@
+From f54a3e4bbd24a7e0c161184e5749336c7af4c405 Mon Sep 17 00:00:00 2001
+From: Niklas Hauser <niklas.hauser@rwth-aachen.de>
+Date: Mon, 12 Oct 2026 20:49:28 +0200
+Subject: [PATCH 6/6] Fix read before the start of the text when markdown finds
+ a dash
+
+processInline() passed the 8 characters in front of a dash to
+processNmdash() without checking that 8 characters exist. For a dash near
+the start of the text, for example in a short link title, the view
+started before the string buffer.
+
+Limit the view to the characters which are available.
+---
+ src/parse_md.cpp | 13 ++++++++++---
+ 1 file changed, 10 insertions(+), 3 deletions(-)
+
+diff --git a/src/parse_md.cpp b/src/parse_md.cpp
+index 77ba8a45..c8a8782d 100644
+--- a/src/parse_md.cpp
++++ b/src/parse_md.cpp
+@@ -1801,10 +1801,17 @@ void processInline(QString &out, QStringView processText, QString::const_iterato
+             skipCount = processHtmlTag(out, s1, iter_size, s2);
+             break;
+ 
+-         case '-':
+-            // last one is  passing pristineChars8
+-            skipCount = processNmdash(out, s1, iter_size, QStringView(iter_index - 8, iter_index));
++         case '-': {
++            // last one is passing pristineChars8, there can be less than 8 characters before the dash
++            QString::const_iterator iter_prev = iter_index;
++
++            for (int count = 0; count < 8 && iter_prev != processText.constBegin(); ++count) {
++               --iter_prev;
++            }
++
++            skipCount = processNmdash(out, s1, iter_size, QStringView(iter_prev, iter_index));
+             break;
++         }
+ 
+          case '"':
+             skipCount = processQuoted(out, s1, iter_size);

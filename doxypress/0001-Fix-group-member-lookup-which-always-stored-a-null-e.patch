@@ -1,0 +1,33 @@
+From fb7ff806c90b75cf23cfe6d44e585de2ca9ba21f Mon Sep 17 00:00:00 2001
+From: Niklas Hauser <niklas.hauser@rwth-aachen.de>
+Date: Mon, 12 Oct 2026 17:54:44 +0200
+Subject: [PATCH 1/6] Fix group member lookup which always stored a null entry
+
+GroupDef::insertMember() inserted the null pointer returned by the failed
+lookup into allMemberNameInfoSDict instead of the newly created
+MemberNameInfo. This was introduced in 3ffa1de1 (Fix variable shadowing)
+when the inner variable was renamed to tmp but the insert() argument was
+not updated.
+
+Because of this the 'already added before' check never matched, so
+addMembersToMemberGroup() appended members to the very list it was
+iterating over. This is undefined behavior (iterator invalidation) and
+crashes on macOS/arm64 with a null MemberDef, and duplicates members of
+documented groups on other platforms.
+---
+ src/groupdef.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/groupdef.cpp b/src/groupdef.cpp
+index 849d3298..18774ff0 100644
+--- a/src/groupdef.cpp
++++ b/src/groupdef.cpp
+@@ -295,7 +295,7 @@ bool GroupDef::insertMember(QSharedPointer<MemberDef> md, bool docOnly)
+       QSharedPointer<MemberNameInfo> tmp = QMakeShared<MemberNameInfo>(md->name());
+       tmp->append(MemberInfo(md, md->protection(), md->virtualness(), false));
+ 
+-      allMemberNameInfoSDict->insert(tmp->memberName(), mni);
++      allMemberNameInfoSDict->insert(tmp->memberName(), tmp);
+    }
+ 
+    allMemberList->append(md);

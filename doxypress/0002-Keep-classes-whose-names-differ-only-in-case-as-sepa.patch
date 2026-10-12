@@ -1,0 +1,65 @@
+From d0ad14b5b066a6d59579f9e9359fbb7cabf3f5ad Mon Sep 17 00:00:00 2001
+From: Niklas Hauser <niklas.hauser@rwth-aachen.de>
+Date: Mon, 12 Oct 2026 17:59:14 +0200
+Subject: [PATCH 2/6] Keep classes whose names differ only in case as separate
+ classes
+
+The global class dictionary used the setting 'sort-class-case-sensitive'
+as the comparison for its keys. With the default value (false) a lookup
+for 'ns::foo' returned 'ns::Foo', so in C++ code like
+
+    struct foo {};
+    template<class T> class Foo : public foo {};
+
+only one of the two classes was documented and Foo was resolved as its
+own base class.
+
+The setting now only selects the sort order of the class dictionary.
+Names which compare equal ignoring case are ordered case sensitive and
+remain distinct keys.
+---
+ src/stringmap.h | 18 ++++++++++++++----
+ 1 file changed, 14 insertions(+), 4 deletions(-)
+
+diff --git a/src/stringmap.h b/src/stringmap.h
+index 06d50de4..f27f27b8 100644
+--- a/src/stringmap.h
++++ b/src/stringmap.h
+@@ -56,14 +56,23 @@ struct SectionInfo;
+ // Ordered dictionary of elements of type T Internally uses a QMap<T>
+ class StringCompare {
+    public:
+-      explicit StringCompare(Qt::CaseSensitivity sortCase) : m_sortCase_enum(sortCase) { }
++      // uniqueCase: sort order follows sortCase, keys which differ only in case remain distinct entries
++      explicit StringCompare(Qt::CaseSensitivity sortCase, bool uniqueCase = false)
++         : m_sortCase_enum(sortCase), m_uniqueCase(uniqueCase) { }
+ 
+       bool operator()(const QString &a, const QString &b) const {
+-         return a.compare(b, m_sortCase_enum) < 0;
++         int retval = a.compare(b, m_sortCase_enum);
++
++         if (retval == 0 && m_uniqueCase && m_sortCase_enum == Qt::CaseInsensitive) {
++            retval = a.compare(b, Qt::CaseSensitive);
++         }
++
++         return retval < 0;
+       }
+ 
+    private:
+       Qt::CaseSensitivity m_sortCase_enum;
++      bool m_uniqueCase;
+ };
+ 
+ template<class T, class SC = StringCompare>
+@@ -356,8 +365,9 @@ class LongMap
+ class ClassSDict : public StringMap<QSharedPointer<ClassDef>>
+ {
+    public:
+-   ClassSDict(Qt::CaseSensitivity isCase = Qt::CaseSensitive)
+-         : StringMap<QSharedPointer<ClassDef>>(isCase)
++      // isCase only selects the sort order, class names which differ only in case are different classes
++      ClassSDict(Qt::CaseSensitivity isCase = Qt::CaseSensitive)
++         : StringMap<QSharedPointer<ClassDef>>(StringCompare(isCase, true))
+       {}
+ 
+       ~ClassSDict() {}
