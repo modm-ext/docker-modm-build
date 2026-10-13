@@ -1,0 +1,289 @@
+From 6362673494ab6d0298f190b63591d57f235a0686 Mon Sep 17 00:00:00 2001
+From: Niklas Hauser <niklas.hauser@rwth-aachen.de>
+Date: Tue, 13 Oct 2026 10:17:14 +0200
+Subject: [PATCH 08/12] perf: sort comparators without case folding
+
+---
+ src/classlist.cpp    |  7 ++++---
+ src/index.cpp        |  7 ++++---
+ src/memberlist.cpp   |  3 ++-
+ src/membername.cpp   |  3 ++-
+ src/namespacedef.cpp |  3 ++-
+ src/sortedlist.cpp   | 23 ++++++++++++-----------
+ src/stringmap.cpp    | 14 +++++++-------
+ 7 files changed, 33 insertions(+), 27 deletions(-)
+
+diff --git a/src/classlist.cpp b/src/classlist.cpp
+index a90ee39a..b532e89a 100644
+--- a/src/classlist.cpp
++++ b/src/classlist.cpp
+@@ -19,6 +19,7 @@
+ *
+ *************************************************************************/
+ 
++#include <stringmap.h>
+ #include <classlist.h>
+ 
+ #include <arguments.h>
+@@ -34,13 +35,13 @@ static int compItems(const QSharedPointer<ClassDef> &c1, const QSharedPointer<Cl
+    static const bool sortByScopeName = Config::getBool("sort-by-scope-name");
+ 
+    if (sortByScopeName) {
+-      return c1->name().compare(c2->name(), Qt::CaseInsensitive);
++      return StringCompare::compareNoCase(c1->name(), c2->name());
+ 
+    } else {
+-      int compareResult = c1->className().compare(c2->className(), Qt::CaseInsensitive);
++      int compareResult = StringCompare::compareNoCase(c1->className(), c2->className());
+ 
+       if (compareResult == 0) {
+-         return c1->name().compare(c2->name(), Qt::CaseInsensitive);
++         return StringCompare::compareNoCase(c1->name(), c2->name());
+       } else {
+          return compareResult;
+       }
+diff --git a/src/index.cpp b/src/index.cpp
+index 3a0bcbef..cb36648c 100644
+--- a/src/index.cpp
++++ b/src/index.cpp
+@@ -19,6 +19,7 @@
+ *
+ *************************************************************************/
+ 
++#include <stringmap.h>
+ #include <index.h>
+ 
+ #include <config.h>
+@@ -342,10 +343,10 @@ class MemberIndexList : public QList<QSharedPointer<MemberDef>>
+    { }
+ 
+    static bool compareValues(const QSharedPointer<MemberDef> md1, const QSharedPointer<MemberDef> md2) {
+-      int result = md1->name().compare(md2->name(), Qt::CaseInsensitive);
++      int result = StringCompare::compareNoCase(md1->name(), md2->name());
+ 
+       if (result == 0) {
+-         result = md1->qualifiedName().compare(md2->qualifiedName(), Qt::CaseInsensitive);
++         result = StringCompare::compareNoCase(md1->qualifiedName(), md2->qualifiedName());
+       }
+ 
+       return result < 0;
+@@ -1876,7 +1877,7 @@ class PrefixIgnoreClassList : public SortedList<QSharedPointer<ClassDef>>
+       QString tmp1 = n1.mid( getPrefixIndex(n1) );
+       QString tmp2 = n2.mid( getPrefixIndex(n2) );
+ 
+-      int i = tmp1.compare(tmp2, Qt::CaseInsensitive);
++      int i = StringCompare::compareNoCase(tmp1, tmp2);
+ 
+       return i < 0;
+    }
+diff --git a/src/memberlist.cpp b/src/memberlist.cpp
+index cfa712b7..1db37c63 100644
+--- a/src/memberlist.cpp
++++ b/src/memberlist.cpp
+@@ -19,6 +19,7 @@
+ *
+ *************************************************************************/
+ 
++#include <stringmap.h>
+ #include <memberlist.h>
+ 
+ #include <config.h>
+@@ -1132,7 +1133,7 @@ void MemberList::writeTagFile(QTextStream &tagFile)
+ 
+ int MemberSDict::compareMapValues(const QSharedPointer<MemberDef> &c1, const QSharedPointer<MemberDef> &c2) const
+ {
+-   int cmp = c1->name().compare(c2->name(), Qt::CaseInsensitive);
++   int cmp = StringCompare::compareNoCase(c1->name(), c2->name());
+ 
+    if (cmp) {
+       return cmp;
+diff --git a/src/membername.cpp b/src/membername.cpp
+index 72052628..4ee903e0 100644
+--- a/src/membername.cpp
++++ b/src/membername.cpp
+@@ -19,6 +19,7 @@
+ *
+ *************************************************************************/
+ 
++#include <stringmap.h>
+ #include <membername.h>
+ 
+ #include <util.h>
+@@ -82,7 +83,7 @@ int MemberNameSDict::compareMapValues(const QSharedPointer<MemberName> &n1, cons
+    QString tmp1 = name1.mid( getPrefixIndex(name1) );
+    QString tmp2 = name2.mid( getPrefixIndex(name2) );
+      
+-   int i = tmp1.compare(tmp2, Qt::CaseInsensitive);
++   int i = StringCompare::compareNoCase(tmp1, tmp2);
+ 
+    return i;
+ }
+diff --git a/src/namespacedef.cpp b/src/namespacedef.cpp
+index 9e46ce51..8c59e13a 100644
+--- a/src/namespacedef.cpp
++++ b/src/namespacedef.cpp
+@@ -19,6 +19,7 @@
+ *
+ *************************************************************************/
+ 
++#include <stringmap.h>
+ #include <namespacedef.h>
+ 
+ #include <classdef.h>
+@@ -987,7 +988,7 @@ void NamespaceDef::combineUsingRelations()
+ 
+ int NamespaceSDict::compareMapValues(const QSharedPointer<NamespaceDef> &item1, const QSharedPointer<NamespaceDef> &item2) const
+ {
+-   return item1->name().compare(item2->name(), Qt::CaseInsensitive);
++   return StringCompare::compareNoCase(item1->name(), item2->name());
+ }
+ 
+ bool NamespaceSDict::declVisible() const
+diff --git a/src/sortedlist.cpp b/src/sortedlist.cpp
+index 0fcebc18..3a45a119 100644
+--- a/src/sortedlist.cpp
++++ b/src/sortedlist.cpp
+@@ -19,6 +19,7 @@
+ *
+ *************************************************************************/
+ 
++#include <stringmap.h>
+ #include <sortedlist.h>
+ 
+ #include <classdef.h>
+@@ -42,7 +43,7 @@ int compareListValues(const BaseClassDef *item1, const BaseClassDef *item2, bool
+       return false;
+ 
+    } else {
+-      return c1->name().compare(c2->name(), Qt::CaseInsensitive);
++      return StringCompare::compareNoCase(c1->name(), c2->name());
+    }
+ }
+ 
+@@ -53,10 +54,10 @@ int compareListValues(const QSharedPointer<ClassDef> item1, const QSharedPointer
+    static bool b = Config::getBool("sort-by-scope-name");
+ 
+    if (b) {
+-      return item1->name().compare(item2->name(), Qt::CaseInsensitive);
++      return StringCompare::compareNoCase(item1->name(), item2->name());
+ 
+    } else {
+-      return item1->className().compare(item2->className(), Qt::CaseInsensitive);
++      return StringCompare::compareNoCase(item1->className(), item2->className());
+ 
+    }
+ }
+@@ -66,7 +67,7 @@ int compareListValues(const QSharedPointer<ClassDef> item1, const QSharedPointer
+ int compareListValues(const QSharedPointer<DirDef> &item1, const QSharedPointer<DirDef> &item2, bool flag)
+ {
+    (void) flag;
+-   return item1->shortName().compare(item2->shortName(), Qt::CaseInsensitive);
++   return StringCompare::compareNoCase(item1->shortName(), item2->shortName());
+ }
+ 
+ 
+@@ -74,7 +75,7 @@ int compareListValues(const QSharedPointer<DirDef> &item1, const QSharedPointer<
+ int compareListValues(const DotNode *item1, const DotNode *item2, bool flag)
+ {
+    (void) flag;
+-   return item1->label().compare(item2->label(), Qt::CaseInsensitive);
++   return StringCompare::compareNoCase(item1->label(), item2->label());
+ }
+ 
+ 
+@@ -83,9 +84,9 @@ int compareListValues(const DotNode *item1, const DotNode *item2, bool flag)
+ int compareListValues(const QSharedPointer<FileDef> &item1, const QSharedPointer<FileDef> &item2, bool flag)
+ {
+    if (flag) {
+-      return item1->fileName().compare(item2->fileName(), Qt::CaseInsensitive);
++      return StringCompare::compareNoCase(item1->fileName(), item2->fileName());
+    } else {
+-      return item1->name().compare(item2->name(), Qt::CaseInsensitive);
++      return StringCompare::compareNoCase(item1->name(), item2->name());
+    }
+ }
+ 
+@@ -97,10 +98,10 @@ int compareListValues(const QSharedPointer<FileNameList> &item1, const QSharedPo
+    int retval;
+ 
+    if (Config::getBool("full-path-names")) {
+-      retval = item1->fullName().compare(item2->fullName(), Qt::CaseInsensitive);
++      retval = StringCompare::compareNoCase(item1->fullName(), item2->fullName());
+ 
+    } else {
+-      retval = item1->fileName().compare(item2->fileName(), Qt::CaseInsensitive);
++      retval = StringCompare::compareNoCase(item1->fileName(), item2->fileName());
+ 
+    }
+ 
+@@ -135,10 +136,10 @@ int compareListValues(const QSharedPointer<MemberDef> &c1, const QSharedPointer<
+       }
+    }
+ 
+-   int cmp = c1->name().compare(c2->name(), Qt::CaseInsensitive );
++   int cmp = StringCompare::compareNoCase(c1->name(), c2->name());
+ 
+    if (cmp == 0) {
+-      cmp = c1->argsString().compare(c2->argsString(), Qt::CaseInsensitive );
++      cmp = StringCompare::compareNoCase(c1->argsString(), c2->argsString());
+    }
+ 
+    return cmp != 0 ? cmp : c1->getDefLine() - c2->getDefLine();
+diff --git a/src/stringmap.cpp b/src/stringmap.cpp
+index e08f3b67..9ca24f2c 100644
+--- a/src/stringmap.cpp
++++ b/src/stringmap.cpp
+@@ -33,17 +33,17 @@
+ 
+ int ConceptSDict::compareMapValues(const QSharedPointer<ConceptDef> &item1, const QSharedPointer<ConceptDef> &item2) const
+ {
+-   return item1->name().compare(item2->name(), Qt::CaseInsensitive);
++   return StringCompare::compareNoCase(item1->name(), item2->name());
+ }
+ 
+ int DirSDict::compareMapValues(const QSharedPointer<DirDef> &item1, const QSharedPointer<DirDef> &item2) const
+ {
+-   return item1->shortName().compare(item2->shortName(), Qt::CaseInsensitive);
++   return StringCompare::compareNoCase(item1->shortName(), item2->shortName());
+ }
+ 
+ int ExampleSDict::compareMapValues(const QSharedPointer<Example> &item1, const QSharedPointer<Example> &item2) const
+ {
+-   return item1->name.compare(item2->name, Qt::CaseInsensitive);
++   return StringCompare::compareNoCase(item1->name, item2->name);
+ }
+ 
+ int GroupSDict::compareMapValues(const QSharedPointer<GroupDef> &item1, const QSharedPointer<GroupDef> &item2) const
+@@ -54,7 +54,7 @@ int GroupSDict::compareMapValues(const QSharedPointer<GroupDef> &item1, const QS
+ int IndexFieldSDict::compareMapValues(const QSharedPointer<IndexField> &item1,
+                   const QSharedPointer<IndexField> &item2) const
+ {
+-   return item1->name.compare(item2->name, Qt::CaseInsensitive);
++   return StringCompare::compareNoCase(item1->name, item2->name);
+ }
+ 
+ int MemberGroupSDict::compareMapValues(const QSharedPointer<MemberGroup> &item1, const QSharedPointer<MemberGroup> &item2) const {
+@@ -64,12 +64,12 @@ int MemberGroupSDict::compareMapValues(const QSharedPointer<MemberGroup> &item1,
+ int MemberNameInfoSDict::compareMapValues(const QSharedPointer<MemberNameInfo> &item1,
+                   const QSharedPointer<MemberNameInfo> &item2) const
+ {
+-   return item1->memberName().compare(item2->memberName(), Qt::CaseInsensitive );
++   return StringCompare::compareNoCase(item1->memberName(), item2->memberName());
+ }
+ 
+ int PageSDict::compareMapValues(const QSharedPointer<PageDef> &i1, const QSharedPointer<PageDef> &i2) const
+ {
+-   return i1->name().compare(i2->name(), Qt::CaseInsensitive);
++   return StringCompare::compareNoCase(i1->name(), i2->name());
+ }
+ 
+ void SearchIndexMap ::insertDef(QSharedPointer<Definition> d)
+@@ -95,7 +95,7 @@ int SearchIndexMap::compareMapValues(const QSharedPointer<SearchDefinitionList>
+    QString n1 = md1->first()->localName();
+    QString n2 = md2->first()->localName();
+ 
+-   return n1.compare(n2, Qt::CaseInsensitive);
++   return StringCompare::compareNoCase(n1, n2);
+ }
+ 
+ 

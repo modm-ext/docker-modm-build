@@ -1,0 +1,38 @@
+From edf9d262c860f9f5a31724b499482aa01eacc78b Mon Sep 17 00:00:00 2001
+From: Niklas Hauser <niklas.hauser@rwth-aachen.de>
+Date: Tue, 13 Oct 2026 10:16:09 +0200
+Subject: [PATCH 07/12] perf: isNewline() without building strings for every
+ character
+
+---
+ src/parse_md.cpp | 14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
+
+diff --git a/src/parse_md.cpp b/src/parse_md.cpp
+index c8a8782d..f36e713d 100644
+--- a/src/parse_md.cpp
++++ b/src/parse_md.cpp
+@@ -127,11 +127,21 @@ static bool extraChar(const QChar &text)
+ // returns 0 if no newline is found, or the number of characters that make up the newline if found.
+ static int isNewline(const QStringView data)
+ {
+-   // normal newline
+-   if (data.startsWith('\n')) {
++   // called for every character, do not build strings unless a backslash starts the text
++   if (data.isEmpty()) {
++      return 0;
++   }
++
++   const QChar first = *data.constBegin();
++
++   if (first == '\n') {
+       return 1;
+    }
+ 
++   if (first != '\\') {
++      return 0;
++   }
++
+    // artificial new line from ^^ in ALIASES
+    if (data.startsWith("\\internal_linebr "))  {
+       return 17;

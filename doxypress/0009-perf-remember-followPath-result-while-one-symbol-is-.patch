@@ -1,0 +1,76 @@
+From 36c09b22007842e7808ea53e87b93d99ad447e9b Mon Sep 17 00:00:00 2001
+From: Niklas Hauser <niklas.hauser@rwth-aachen.de>
+Date: Tue, 13 Oct 2026 10:19:00 +0200
+Subject: [PATCH 09/12] perf: remember followPath() result while one symbol is
+ resolved
+
+---
+ src/util.cpp | 34 +++++++++++++++++++++++++++++++++-
+ 1 file changed, 33 insertions(+), 1 deletion(-)
+
+diff --git a/src/util.cpp b/src/util.cpp
+index 3f32cc16..6cc6388f 100644
+--- a/src/util.cpp
++++ b/src/util.cpp
+@@ -1072,6 +1072,34 @@ done:
+  *   not found and then A::I is searched in the global scope, which matches and
+  *   thus the result is 1.
+  */
++// perf: followPath() does not depend on the candidate item, remember the result while one symbol is resolved
++struct FollowPathEntry {
++   const Definition *scopeDef;
++   const FileDef    *fileScope;
++   QString           path;
++   QSharedPointer<const Definition> result;
++};
++
++static std::vector<FollowPathEntry> s_followPathCache;
++
++static QSharedPointer<const Definition> followPathCached(const QSharedPointer<const Definition> &scopeDef,
++                  const QSharedPointer<const FileDef> &fileScope, const QString &path)
++{
++   for (const auto &entry : s_followPathCache) {
++      if (entry.scopeDef == scopeDef.data() && entry.fileScope == fileScope.data() && entry.path == path) {
++         return entry.result;
++      }
++   }
++
++   QSharedPointer<const Definition> result = followPath(scopeDef, fileScope, path);
++
++   if (s_followPathCache.size() < 64) {
++      s_followPathCache.push_back(FollowPathEntry{scopeDef.data(), fileScope.data(), path, result});
++   }
++
++   return result;
++}
++
+ int isAccessibleFromWithExpScope(const QSharedPointer<const Definition> &scopeDef, const QSharedPointer<const FileDef> &fileScope,
+                   const QSharedPointer<const Definition> &item, const QString &explicitScopePart)
+ {
+@@ -1090,7 +1118,7 @@ int isAccessibleFromWithExpScope(const QSharedPointer<const Definition> &scopeDe
+    // assume we found it
+    int result = 0;
+ 
+-   QSharedPointer<const Definition> newScope = followPath(scopeDef, fileScope, explicitScopePart);
++   QSharedPointer<const Definition> newScope = followPathCached(scopeDef, fileScope, explicitScopePart);
+ 
+    if (newScope) {
+       // explicitScope is inside scope => newScope is the result
+@@ -1446,6 +1474,8 @@ static QSharedPointer<ClassDef> getResolvedClassRec(QSharedPointer<const Definit
+    // init at "infinite"
+    int minDistance = 10000;
+ 
++   s_followPathCache.clear();
++
+    while (iter != Doxy_Globals::glossary().end() && iter.key() == name)  {
+       QSharedPointer<Definition> def = sharedFrom(iter.value());
+ 
+@@ -7141,6 +7171,8 @@ QSharedPointer<MemberDef> getMemberFromSymbol(QSharedPointer<Definition> scope,
+ 
+    int minDistance = 10000;
+ 
++   s_followPathCache.clear();
++
+    // find the closest matching definition
+    while (iter != Doxy_Globals::glossary().end() && iter.key() == name)  {
+       // search for the best match, only look at members

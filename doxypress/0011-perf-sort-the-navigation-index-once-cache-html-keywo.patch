@@ -1,0 +1,99 @@
+From 14f7ec1fc18c1d6a77f2ca4fa86adef9cc1bfe33 Mon Sep 17 00:00:00 2001
+From: Niklas Hauser <niklas.hauser@rwth-aachen.de>
+Date: Tue, 13 Oct 2026 10:28:26 +0200
+Subject: [PATCH 11/12] perf: sort the navigation index once, cache html
+ keywords also with a navigation path
+
+---
+ src/ftvhelp.cpp | 17 ++++++++++++-----
+ src/htmlgen.cpp |  9 +++++++--
+ 2 files changed, 19 insertions(+), 7 deletions(-)
+
+diff --git a/src/ftvhelp.cpp b/src/ftvhelp.cpp
+index 87dbd67f..930f3b08 100644
+--- a/src/ftvhelp.cpp
++++ b/src/ftvhelp.cpp
+@@ -19,6 +19,7 @@
+ *
+ *************************************************************************/
+ 
++#include <algorithm>
+ #include <ftvhelp.h>
+ 
+ #include <config.h>
+@@ -637,11 +638,11 @@ static bool generateJSTree(SortedList<NavIndexEntry *> &navIndex, QTextStream &t
+                bool src = srcFileVisibleInIndex(fd);
+ 
+                if (node->category == DirType::File && doc) {
+-                  navIndex.inSort(new NavIndexEntry(node2URL(node, true, false), pathToNode(node)));
++                  navIndex.append(new NavIndexEntry(node2URL(node, true, false), pathToNode(node)));
+                }
+ 
+                if (node->category == DirType::FileSource && src) {
+-                  navIndex.inSort(new NavIndexEntry(node2URL(node, true, true), pathToNode(node)));
++                  navIndex.append(new NavIndexEntry(node2URL(node, true, true), pathToNode(node)));
+                }
+             }
+ 
+@@ -651,7 +652,7 @@ static bool generateJSTree(SortedList<NavIndexEntry *> &navIndex, QTextStream &t
+                // do not add this file to the navIndex
+ 
+             } else {
+-               navIndex.inSort(new NavIndexEntry(node2URL(node), pathToNode(node)));
++               navIndex.append(new NavIndexEntry(node2URL(node), pathToNode(node)));
+ 
+             }
+          }
+@@ -801,10 +802,10 @@ static void generateJSNavTree(QList<FTVNode *> &nodeList)
+       t << "\"index" << Doxy_Globals::htmlFileExtension << "\", ";
+ 
+       // add one special entry for index page
+-      navIndex.inSort(new NavIndexEntry("index" + Doxy_Globals::htmlFileExtension, QString()));
++      navIndex.append(new NavIndexEntry("index" + Doxy_Globals::htmlFileExtension, QString()));
+ 
+       // add one special entry for related pages, written as a child of index.html
+-      navIndex.inSort(new NavIndexEntry("pages" + Doxy_Globals::htmlFileExtension, QString()));
++      navIndex.append(new NavIndexEntry("pages" + Doxy_Globals::htmlFileExtension, QString()));
+ 
+       // adjust for display output
+       reSortNodes(nodeList);
+@@ -812,6 +813,12 @@ static void generateJSNavTree(QList<FTVNode *> &nodeList)
+       bool omitComma = true;
+       generateJSTree(navIndex, t, nodeList, 1, omitComma);
+ 
++      // perf: entries were appended, sort once. inSort() placed an entry in front of existing entries
++      // with the same url, reversing first keeps that order
++      std::reverse(navIndex.begin(), navIndex.end());
++      std::stable_sort(navIndex.begin(), navIndex.end(),
++            [](const NavIndexEntry *a, const NavIndexEntry *b) { return a->m_url.compare(b->m_url) < 0; });
++
+       if (omitComma) {
+          t << "]" << endl;
+       } else {
+diff --git a/src/htmlgen.cpp b/src/htmlgen.cpp
+index e750f387..b6098363 100644
+--- a/src/htmlgen.cpp
++++ b/src/htmlgen.cpp
+@@ -199,7 +199,12 @@ static QString substituteHtmlKeywords(const QString &output, const QString &titl
+    static const QString titleMark = "@@DoxyPressTitle@@";
+    static const QString navMark   = "@@DoxyPressNavPath@@";
+ 
+-   if (title.isEmpty() || title.contains('$') || navPath.contains('$') || title.contains("@@") || navPath.contains("@@")) {
++   // the navigation path relies on the relative path being substituted after it was inserted
++   QString navPathDone = navPath;
++   navPathDone.replace("$relpath$", relPath);
++   navPathDone.replace("$relpath^", relPath);
++
++   if (title.isEmpty() || title.contains('$') || navPathDone.contains('$') || title.contains("@@") || navPathDone.contains("@@")) {
+       return substituteHtmlKeywords_internal(output, title, relPath, navPath);
+    }
+ 
+@@ -214,7 +219,7 @@ static QString substituteHtmlKeywords(const QString &output, const QString &titl
+ 
+    QString result = iter.value();
+    result.replace(titleMark, convertToHtml(title));
+-   result.replace(navMark, navPath);
++   result.replace(navMark, navPathDone);
+ 
+    return result;
+ }

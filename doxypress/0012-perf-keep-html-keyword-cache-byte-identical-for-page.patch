@@ -1,0 +1,32 @@
+From 5d6050520e9f4ff547de0e140d51d94a58948c16 Mon Sep 17 00:00:00 2001
+From: Niklas Hauser <niklas.hauser@rwth-aachen.de>
+Date: Tue, 13 Oct 2026 10:33:58 +0200
+Subject: [PATCH 12/12] perf: keep html keyword cache byte identical for pages
+ without navigation path
+
+---
+ src/htmlgen.cpp | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/src/htmlgen.cpp b/src/htmlgen.cpp
+index b6098363..18493ec2 100644
+--- a/src/htmlgen.cpp
++++ b/src/htmlgen.cpp
+@@ -210,11 +210,15 @@ static QString substituteHtmlKeywords(const QString &output, const QString &titl
+ 
+    static QHash<QString, QString> s_cache;
+ 
+-   const QString key = QString::number(reinterpret_cast<quintptr>(&output)) + "|" + QString::number(output.size_storage()) + "|" + relPath;
++   // an empty navigation path leaves an empty line which is removed, keep a separate entry for it
++   const bool hasNav = ! navPathDone.isEmpty();
++
++   const QString key = QString::number(reinterpret_cast<quintptr>(&output)) + "|" + QString::number(output.size_storage()) + "|" +
++         (hasNav ? "1|" : "0|") + relPath;
+    auto iter = s_cache.find(key);
+ 
+    if (iter == s_cache.end()) {
+-      iter = s_cache.insert(key, substituteHtmlKeywords_internal(output, titleMark, relPath, navMark));
++      iter = s_cache.insert(key, substituteHtmlKeywords_internal(output, titleMark, relPath, hasNav ? navMark : QString()));
+    }
+ 
+    QString result = iter.value();

@@ -1,0 +1,149 @@
+From f7d0d6f569a475f92cb17af69dc22ac68b401739 Mon Sep 17 00:00:00 2001
+From: Niklas Hauser <niklas.hauser@rwth-aachen.de>
+Date: Tue, 13 Oct 2026 10:22:33 +0200
+Subject: [PATCH 10/12] perf: cache patterns, whitespace cleanup and html
+ keywords, compare prefixes without folding
+
+---
+ src/htmlgen.cpp | 31 +++++++++++++++++++++++++++++++
+ src/stringmap.h | 20 +++++++++++++++++++-
+ src/util.cpp    | 41 ++++++++++++++++++++++++++++++++++++-----
+ 3 files changed, 86 insertions(+), 6 deletions(-)
+
+diff --git a/src/htmlgen.cpp b/src/htmlgen.cpp
+index 7f7101f0..e750f387 100644
+--- a/src/htmlgen.cpp
++++ b/src/htmlgen.cpp
+@@ -188,8 +188,39 @@ static QString removeEmptyLines(const QString &s)
+    return retval;
+ }
+ 
++static QString substituteHtmlKeywords_internal(const QString &output, const QString &title,
++      const QString &relPath, const QString &navPath);
++
++// perf: only the title and the navigation path differ between pages, everything else is substituted once
++// per template and relative path. Date and time keywords keep the value of the first page.
+ static QString substituteHtmlKeywords(const QString &output, const QString &title,
+       const QString &relPath = QString(), const QString &navPath = QString())
++{
++   static const QString titleMark = "@@DoxyPressTitle@@";
++   static const QString navMark   = "@@DoxyPressNavPath@@";
++
++   if (title.isEmpty() || title.contains('$') || navPath.contains('$') || title.contains("@@") || navPath.contains("@@")) {
++      return substituteHtmlKeywords_internal(output, title, relPath, navPath);
++   }
++
++   static QHash<QString, QString> s_cache;
++
++   const QString key = QString::number(reinterpret_cast<quintptr>(&output)) + "|" + QString::number(output.size_storage()) + "|" + relPath;
++   auto iter = s_cache.find(key);
++
++   if (iter == s_cache.end()) {
++      iter = s_cache.insert(key, substituteHtmlKeywords_internal(output, titleMark, relPath, navMark));
++   }
++
++   QString result = iter.value();
++   result.replace(titleMark, convertToHtml(title));
++   result.replace(navMark, navPath);
++
++   return result;
++}
++
++static QString substituteHtmlKeywords_internal(const QString &output, const QString &title,
++      const QString &relPath, const QString &navPath)
+ {
+    // Build CSS/Javascript tags depending on treeview, search engine settings
+ 
+diff --git a/src/stringmap.h b/src/stringmap.h
+index 33f88e3e..23829c02 100644
+--- a/src/stringmap.h
++++ b/src/stringmap.h
+@@ -114,7 +114,25 @@ class StringCompare {
+             return 0;
+          }
+ 
+-         // remaining text can contain non ASCII characters which fold to nothing or to ASCII
++         // perf: one string is a prefix of the other, only fall back when the remaining text is not ASCII
++         // since non ASCII characters can fold to nothing
++         {
++            auto iterR = (iterA == endA) ? iterB : iterA;
++            const auto endR = (iterA == endA) ? endB : endA;
++            bool ascii = true;
++
++            for (; iterR != endR; ++iterR) {
++               if (static_cast<unsigned char>(*iterR) >= 0x80) {
++                  ascii = false;
++                  break;
++               }
++            }
++
++            if (ascii) {
++               return (iterA == endA) ? -1 : 1;
++            }
++         }
++
+          return a.compare(b, Qt::CaseInsensitive);
+       }
+ 
+diff --git a/src/util.cpp b/src/util.cpp
+index 6cc6388f..2d2f92da 100644
+--- a/src/util.cpp
++++ b/src/util.cpp
+@@ -1614,7 +1614,27 @@ QString removeAllWhiteSpace(const QString &str)
+ static const char constScope[]   = { 'c', 'o', 'n', 's', 't', ':' };
+ static const char virtualScope[] = { 'v', 'i', 'r', 't', 'u', 'a', 'l', ':' };
+ 
++static QString removeRedundantWhiteSpace_internal(const QString &str_x, bool makePretty);
++
++// perf: pure function which is called with the same type strings over and over
+ QString removeRedundantWhiteSpace(const QString &str_x, bool makePretty)
++{
++   static QHash<QString, QString> s_cache[2];
++   auto &cache = s_cache[makePretty ? 1 : 0];
++
++   auto iter = cache.find(str_x);
++
++   if (iter != cache.end()) {
++      return iter.value();
++   }
++
++   QString retval = removeRedundantWhiteSpace_internal(str_x, makePretty);
++   cache.insert(str_x, retval);
++
++   return retval;
++}
++
++static QString removeRedundantWhiteSpace_internal(const QString &str_x, bool makePretty)
+ {
+    static bool cliSupport = Config::getBool("cpp-cli-support");
+ 
+@@ -7920,13 +7940,24 @@ bool patternMatch(const QFileInfo &fi, const QStringList &patList)
+             pattern = pattern.left(i);   // strip off the extension
+          }
+ 
+-         if (ignoreCase == Qt::CaseInsensitive) {
+-            regExp = QRegularExpression(pattern, QPatternOption::CaseInsensitiveOption | QPatternOption::WildcardOption |
+-                  QPatternOption::ExactMatchOption);
++         // perf: compile every pattern once
++         static QHash<QString, QRegularExpression> s_patternCache;
++         auto iterCache = s_patternCache.find(pattern);
++
++         if (iterCache == s_patternCache.end()) {
++            if (ignoreCase == Qt::CaseInsensitive) {
++               regExp = QRegularExpression(pattern, QPatternOption::CaseInsensitiveOption | QPatternOption::WildcardOption |
++                     QPatternOption::ExactMatchOption);
+ 
+-         } else  {
+-            regExp = QRegularExpression(pattern, QPatternOption::WildcardOption | QPatternOption::ExactMatchOption);
++            } else  {
++               regExp = QRegularExpression(pattern, QPatternOption::WildcardOption | QPatternOption::ExactMatchOption);
+ 
++            }
++
++            s_patternCache.insert(pattern, regExp);
++
++         } else {
++            regExp = iterCache.value();
+          }
+ 
+          // input-patterns
